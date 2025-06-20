@@ -1,0 +1,325 @@
+import time
+import random
+from typing import List, Optional, Tuple
+
+class Product:
+    """
+    Product class for e-commerce platform with search optimization
+    """
+    def __init__(self, product_id: int, product_name: str, category: str, price: float = 0.0):
+        self.product_id = product_id
+        self.product_name = product_name
+        self.category = category
+        self.price = price
+    
+    def __str__(self):
+        return f"Product(ID: {self.product_id}, Name: '{self.product_name}', Category: '{self.category}', Price: ${self.price:.2f})"
+    
+    def __repr__(self):
+        return self.__str__()
+
+class EcommerceSearchEngine:
+    """
+    Search engine for e-commerce platform with linear and binary search implementations
+    """
+    
+    def __init__(self):
+        self.products = []  # Unsorted array for linear search
+        self.sorted_products_by_id = []  # Sorted by product_id for binary search
+        self.sorted_products_by_name = []  # Sorted by product_name for binary search
+    
+    def add_product(self, product: Product):
+        """Add a product to the search engine"""
+        self.products.append(product)
+        self._maintain_sorted_arrays()
+    
+    def add_products(self, products: List[Product]):
+        """Add multiple products efficiently"""
+        self.products.extend(products)
+        self._maintain_sorted_arrays()
+    
+    def _maintain_sorted_arrays(self):
+        """Maintain sorted arrays for binary search"""
+        self.sorted_products_by_id = sorted(self.products, key=lambda p: p.product_id)
+        self.sorted_products_by_name = sorted(self.products, key=lambda p: p.product_name.lower())
+    
+    # LINEAR SEARCH IMPLEMENTATIONS
+    def linear_search_by_id(self, product_id: int) -> Tuple[Optional[Product], int]:
+        """
+        Linear search by product ID
+        Time Complexity: O(n)
+        Space Complexity: O(1)
+        """
+        comparisons = 0
+        for product in self.products:
+            comparisons += 1
+            if product.product_id == product_id:
+                return product, comparisons
+        return None, comparisons
+    
+    def linear_search_by_name(self, product_name: str) -> Tuple[List[Product], int]:
+        """
+        Linear search by product name (partial match)
+        Time Complexity: O(n)
+        Space Complexity: O(k) where k is number of matches
+        """
+        comparisons = 0
+        matches = []
+        search_term = product_name.lower()
+        
+        for product in self.products:
+            comparisons += 1
+            if search_term in product.product_name.lower():
+                matches.append(product)
+        
+        return matches, comparisons
+    
+    def linear_search_by_category(self, category: str) -> Tuple[List[Product], int]:
+        """
+        Linear search by category
+        Time Complexity: O(n)
+        Space Complexity: O(k) where k is number of matches
+        """
+        comparisons = 0
+        matches = []
+        search_category = category.lower()
+        
+        for product in self.products:
+            comparisons += 1
+            if product.category.lower() == search_category:
+                matches.append(product)
+        
+        return matches, comparisons
+    
+    # BINARY SEARCH IMPLEMENTATIONS
+    def binary_search_by_id(self, product_id: int) -> Tuple[Optional[Product], int]:
+        """
+        Binary search by product ID
+        Time Complexity: O(log n)
+        Space Complexity: O(1)
+        """
+        left, right = 0, len(self.sorted_products_by_id) - 1
+        comparisons = 0
+        
+        while left <= right:
+            comparisons += 1
+            mid = (left + right) // 2
+            mid_product = self.sorted_products_by_id[mid]
+            
+            if mid_product.product_id == product_id:
+                return mid_product, comparisons
+            elif mid_product.product_id < product_id:
+                left = mid + 1
+            else:
+                right = mid - 1
+        
+        return None, comparisons
+    
+    def binary_search_by_name_exact(self, product_name: str) -> Tuple[Optional[Product], int]:
+        """
+        Binary search by exact product name
+        Time Complexity: O(log n)
+        Space Complexity: O(1)
+        """
+        left, right = 0, len(self.sorted_products_by_name) - 1
+        comparisons = 0
+        search_name = product_name.lower()
+        
+        while left <= right:
+            comparisons += 1
+            mid = (left + right) // 2
+            mid_product = self.sorted_products_by_name[mid]
+            mid_name = mid_product.product_name.lower()
+            
+            if mid_name == search_name:
+                return mid_product, comparisons
+            elif mid_name < search_name:
+                left = mid + 1
+            else:
+                right = mid - 1
+        
+        return None, comparisons
+    
+    # PERFORMANCE TESTING METHODS
+    def benchmark_search_algorithms(self, test_product_id: int, test_product_name: str):
+        """
+        Benchmark linear vs binary search performance
+        """
+        print(f"\n=== SEARCH PERFORMANCE BENCHMARK ===")
+        print(f"Dataset size: {len(self.products)} products")
+        print(f"Searching for Product ID: {test_product_id}")
+        print(f"Searching for Product Name: '{test_product_name}'")
+        
+        # Linear Search by ID
+        start_time = time.time()
+        linear_result_id, linear_comparisons_id = self.linear_search_by_id(test_product_id)
+        linear_time_id = time.time() - start_time
+        
+        # Binary Search by ID
+        start_time = time.time()
+        binary_result_id, binary_comparisons_id = self.binary_search_by_id(test_product_id)
+        binary_time_id = time.time() - start_time
+        
+        # Linear Search by Name
+        start_time = time.time()
+        linear_result_name, linear_comparisons_name = self.linear_search_by_name(test_product_name)
+        linear_time_name = time.time() - start_time
+        
+        # Binary Search by Name (exact)
+        start_time = time.time()
+        binary_result_name, binary_comparisons_name = self.binary_search_by_name_exact(test_product_name)
+        binary_time_name = time.time() - start_time
+        
+        print(f"\n--- ID Search Results ---")
+        print(f"Linear Search:  {linear_comparisons_id:4d} comparisons, {linear_time_id:.6f}s")
+        print(f"Binary Search:  {binary_comparisons_id:4d} comparisons, {binary_time_id:.6f}s")
+        print(f"Efficiency Gain: {linear_comparisons_id/binary_comparisons_id:.1f}x fewer comparisons")
+        
+        print(f"\n--- Name Search Results ---")
+        print(f"Linear Search:  {linear_comparisons_name:4d} comparisons, {linear_time_name:.6f}s")
+        print(f"Binary Search:  {binary_comparisons_name:4d} comparisons, {binary_time_name:.6f}s")
+        
+        return {
+            'linear_id': (linear_result_id, linear_comparisons_id, linear_time_id),
+            'binary_id': (binary_result_id, binary_comparisons_id, binary_time_id),
+            'linear_name': (linear_result_name, linear_comparisons_name, linear_time_name),
+            'binary_name': (binary_result_name, binary_comparisons_name, binary_time_name)
+        }
+    
+    def get_stats(self):
+        """Get search engine statistics"""
+        categories = {}
+        for product in self.products:
+            categories[product.category] = categories.get(product.category, 0) + 1
+        
+        return {
+            'total_products': len(self.products),
+            'categories': categories,
+            'sorted_arrays_maintained': len(self.sorted_products_by_id) == len(self.products)
+        }
+
+# DEMO AND TESTING FUNCTIONS
+def create_sample_products(num_products: int) -> List[Product]:
+    """Create sample products for testing"""
+    categories = ['Electronics', 'Clothing', 'Books', 'Home & Garden', 'Sports', 'Toys']
+    products = []
+    
+    for i in range(num_products):
+        product_id = i + 1
+        product_name = f"Product {product_id}"
+        category = random.choice(categories)
+        price = round(random.uniform(10, 500), 2)
+        products.append(Product(product_id, product_name, category, price))
+    
+    return products
+
+def demonstrate_search_functionality():
+    """Demonstrate the search functionality with various scenarios"""
+    print("=== E-COMMERCE SEARCH ENGINE DEMO ===")
+    
+    # Create search engine
+    search_engine = EcommerceSearchEngine()
+    
+    # Add sample products
+    print("\n1. Creating sample products...")
+    sample_products = [
+        Product(101, "iPhone 14", "Electronics", 999.99),
+        Product(102, "Samsung Galaxy S23", "Electronics", 899.99),
+        Product(103, "Nike Air Max", "Clothing", 129.99),
+        Product(104, "Adidas Ultraboost", "Clothing", 149.99),
+        Product(105, "Python Programming Book", "Books", 49.99),
+        Product(106, "Java Complete Guide", "Books", 59.99),
+        Product(107, "Garden Hose", "Home & Garden", 29.99),
+        Product(108, "Basketball", "Sports", 24.99),
+    ]
+    
+    search_engine.add_products(sample_products)
+    
+    # Add many more products for performance testing
+    print("2. Adding 1000 additional products for performance testing...")
+    large_dataset = create_sample_products(1000)
+    search_engine.add_products(large_dataset)
+    
+    # Display statistics
+    stats = search_engine.get_stats()
+    print(f"\nSearch Engine Statistics:")
+    print(f"Total Products: {stats['total_products']}")
+    print(f"Categories: {stats['categories']}")
+    
+    # Demonstrate different search methods
+    print("\n=== SEARCH DEMONSTRATIONS ===")
+    
+    # Linear search by ID
+    print("\n3. Linear Search by ID (Product ID: 105):")
+    result, comparisons = search_engine.linear_search_by_id(105)
+    print(f"Found: {result}")
+    print(f"Comparisons needed: {comparisons}")
+    
+    # Binary search by ID
+    print("\n4. Binary Search by ID (Product ID: 105):")
+    result, comparisons = search_engine.binary_search_by_id(105)
+    print(f"Found: {result}")
+    print(f"Comparisons needed: {comparisons}")
+    
+    # Linear search by name (partial match)
+    print("\n5. Linear Search by Name (searching for 'iPhone'):")
+    results, comparisons = search_engine.linear_search_by_name("iPhone")
+    print(f"Found {len(results)} products:")
+    for product in results:
+        print(f"  {product}")
+    print(f"Comparisons needed: {comparisons}")
+    
+    # Search by category
+    print("\n6. Linear Search by Category ('Electronics'):")
+    results, comparisons = search_engine.linear_search_by_category("Electronics")
+    print(f"Found {len(results)} products in Electronics:")
+    for product in results[:3]:  # Show first 3 results
+        print(f"  {product}")
+    print(f"Comparisons needed: {comparisons}")
+    
+    # Performance benchmark
+    search_engine.benchmark_search_algorithms(500, "Product 500")
+    
+    return search_engine
+
+# COMPLEXITY ANALYSIS DEMONSTRATION
+def analyze_algorithm_complexity():
+    """Demonstrate how algorithm complexity affects performance with different dataset sizes"""
+    print("\n=== ALGORITHM COMPLEXITY ANALYSIS ===")
+    
+    dataset_sizes = [100, 500, 1000, 5000, 10000]
+    
+    for size in dataset_sizes:
+        print(f"\nDataset Size: {size}")
+        
+        # Create search engine with specific size
+        engine = EcommerceSearchEngine()
+        products = create_sample_products(size)
+        engine.add_products(products)
+        
+        # Search for an element in the middle (worst case for linear search)
+        target_id = size // 2
+        
+        # Linear search
+        _, linear_comparisons = engine.linear_search_by_id(target_id)
+        
+        # Binary search
+        _, binary_comparisons = engine.binary_search_by_id(target_id)
+        
+        print(f"  Linear Search: {linear_comparisons:5d} comparisons")
+        print(f"  Binary Search: {binary_comparisons:5d} comparisons")
+        print(f"  Efficiency:    {linear_comparisons/binary_comparisons:.1f}x improvement")
+
+if __name__ == "__main__":
+    # Run the demonstration
+    search_engine = demonstrate_search_functionality()
+    
+    # Run complexity analysis
+    analyze_algorithm_complexity()
+    
+    print("\n=== SUMMARY ===")
+    print("✓ Product class implemented with search-optimized attributes")
+    print("✓ Linear search: O(n) time complexity - simple but slower")
+    print("✓ Binary search: O(log n) time complexity - faster but requires sorted data")
+    print("✓ Both algorithms demonstrated with performance benchmarks")
+    print("✓ Real-world e-commerce search scenarios covered")

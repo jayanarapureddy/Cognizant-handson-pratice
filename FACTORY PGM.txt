@@ -1,0 +1,376 @@
+// Document.java - Abstract Document Interface
+abstract class Document {
+    protected String name;
+    protected String content;
+    
+    public Document(String name) {
+        this.name = name;
+        this.content = "";
+    }
+    
+    // Abstract methods to be implemented by concrete classes
+    public abstract void create();
+    public abstract void open();
+    public abstract void save();
+    public abstract void close();
+    public abstract String getDocumentType();
+    
+    // Common methods for all documents
+    public void setContent(String content) {
+        this.content = content;
+    }
+    
+    public String getContent() {
+        return this.content;
+    }
+    
+    public String getName() {
+        return this.name;
+    }
+    
+    public void displayInfo() {
+        System.out.println("Document Name: " + name);
+        System.out.println("Document Type: " + getDocumentType());
+        System.out.println("Content Length: " + content.length() + " characters");
+    }
+}
+
+// WordDocument.java - Concrete Word Document Class
+class WordDocument extends Document {
+    private String template;
+    
+    public WordDocument(String name) {
+        super(name);
+        this.template = "Standard Word Template";
+    }
+    
+    @Override
+    public void create() {
+        System.out.println("Creating Word document: " + name);
+        System.out.println("Applying template: " + template);
+        setContent("This is a new Word document with formatting capabilities.");
+    }
+    
+    @Override
+    public void open() {
+        System.out.println("Opening Word document: " + name + " with Microsoft Word");
+    }
+    
+    @Override
+    public void save() {
+        System.out.println("Saving Word document: " + name + " as .docx file");
+    }
+    
+    @Override
+    public void close() {
+        System.out.println("Closing Word document: " + name);
+    }
+    
+    @Override
+    public String getDocumentType() {
+        return "Word Document (.docx)";
+    }
+    
+    // Word-specific methods
+    public void addTable(int rows, int cols) {
+        System.out.println("Adding table with " + rows + " rows and " + cols + " columns");
+    }
+    
+    public void setTemplate(String template) {
+        this.template = template;
+    }
+}
+
+// PdfDocument.java - Concrete PDF Document Class
+class PdfDocument extends Document {
+    private boolean isEncrypted;
+    private String author;
+    
+    public PdfDocument(String name) {
+        super(name);
+        this.isEncrypted = false;
+        this.author = "System";
+    }
+    
+    @Override
+    public void create() {
+        System.out.println("Creating PDF document: " + name);
+        System.out.println("Setting up PDF structure and metadata");
+        setContent("This is a new PDF document with portable formatting.");
+    }
+    
+    @Override
+    public void open() {
+        System.out.println("Opening PDF document: " + name + " with PDF reader");
+        if (isEncrypted) {
+            System.out.println("Document is encrypted. Password required.");
+        }
+    }
+    
+    @Override
+    public void save() {
+        System.out.println("Saving PDF document: " + name + " as .pdf file");
+    }
+    
+    @Override
+    public void close() {
+        System.out.println("Closing PDF document: " + name);
+    }
+    
+    @Override
+    public String getDocumentType() {
+        return "PDF Document (.pdf)";
+    }
+    
+    // PDF-specific methods
+    public void encrypt(String password) {
+        this.isEncrypted = true;
+        System.out.println("PDF document encrypted with password protection");
+    }
+    
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+    
+    public String getAuthor() {
+        return this.author;
+    }
+}
+
+// ExcelDocument.java - Concrete Excel Document Class
+class ExcelDocument extends Document {
+    private int numberOfSheets;
+    
+    public ExcelDocument(String name) {
+        super(name);
+        this.numberOfSheets = 1;
+    }
+    
+    @Override
+    public void create() {
+        System.out.println("Creating Excel document: " + name);
+        System.out.println("Initializing with " + numberOfSheets + " worksheet(s)");
+        setContent("This is a new Excel document with spreadsheet capabilities.");
+    }
+    
+    @Override
+    public void open() {
+        System.out.println("Opening Excel document: " + name + " with Microsoft Excel");
+    }
+    
+    @Override
+    public void save() {
+        System.out.println("Saving Excel document: " + name + " as .xlsx file");
+    }
+    
+    @Override
+    public void close() {
+        System.out.println("Closing Excel document: " + name);
+    }
+    
+    @Override
+    public String getDocumentType() {
+        return "Excel Document (.xlsx)";
+    }
+    
+    // Excel-specific methods
+    public void addWorksheet(String sheetName) {
+        numberOfSheets++;
+        System.out.println("Added new worksheet: " + sheetName);
+    }
+    
+    public void createChart(String chartType) {
+        System.out.println("Creating " + chartType + " chart in Excel document");
+    }
+    
+    public int getNumberOfSheets() {
+        return numberOfSheets;
+    }
+}
+
+// DocumentFactory.java - Abstract Factory Class
+abstract class DocumentFactory {
+    // Factory method to be implemented by concrete factories
+    public abstract Document createDocument(String name);
+    
+    // Template method that uses the factory method
+    public Document processDocument(String name, String content) {
+        Document document = createDocument(name);
+        document.create();
+        document.setContent(content);
+        return document;
+    }
+    
+    // Common method for all factories
+    public void displayFactoryInfo() {
+        System.out.println("Using " + getClass().getSimpleName() + " to create documents");
+    }
+}
+
+// WordDocumentFactory.java - Concrete Factory for Word Documents
+class WordDocumentFactory extends DocumentFactory {
+    @Override
+    public Document createDocument(String name) {
+        System.out.println("WordDocumentFactory: Creating Word document");
+        return new WordDocument(name);
+    }
+}
+
+// PdfDocumentFactory.java - Concrete Factory for PDF Documents
+class PdfDocumentFactory extends DocumentFactory {
+    @Override
+    public Document createDocument(String name) {
+        System.out.println("PdfDocumentFactory: Creating PDF document");
+        return new PdfDocument(name);
+    }
+}
+
+// ExcelDocumentFactory.java - Concrete Factory for Excel Documents
+class ExcelDocumentFactory extends DocumentFactory {
+    @Override
+    public Document createDocument(String name) {
+        System.out.println("ExcelDocumentFactory: Creating Excel document");
+        return new ExcelDocument(name);
+    }
+}
+
+// DocumentType.java - Enum for Document Types
+enum DocumentType {
+    WORD,
+    PDF,
+    EXCEL
+}
+
+// DocumentManager.java - Client class using Factory Pattern
+class DocumentManager {
+    private DocumentFactory factory;
+    
+    public void setDocumentFactory(DocumentFactory factory) {
+        this.factory = factory;
+    }
+    
+    public Document createNewDocument(String name, String content) {
+        if (factory == null) {
+            throw new IllegalStateException("Document factory not set!");
+        }
+        
+        factory.displayFactoryInfo();
+        Document document = factory.processDocument(name, content);
+        return document;
+    }
+    
+    public DocumentFactory getFactory(DocumentType type) {
+        switch (type) {
+            case WORD:
+                return new WordDocumentFactory();
+            case PDF:
+                return new PdfDocumentFactory();
+            case EXCEL:
+                return new ExcelDocumentFactory();
+            default:
+                throw new IllegalArgumentException("Unknown document type: " + type);
+        }
+    }
+}
+
+// FactoryMethodTest.java - Test Class
+class FactoryMethodTest {
+    public static void main(String[] args) {
+        System.out.println("=== Factory Method Pattern Test ===\n");
+        
+        DocumentManager manager = new DocumentManager();
+        
+        // Test 1: Create Word Document
+        System.out.println("--- Test 1: Creating Word Document ---");
+        testWordDocument(manager);
+        
+        System.out.println("\n--- Test 2: Creating PDF Document ---");
+        testPdfDocument(manager);
+        
+        System.out.println("\n--- Test 3: Creating Excel Document ---");
+        testExcelDocument(manager);
+        
+        System.out.println("\n--- Test 4: Testing Document Operations ---");
+        testDocumentOperations(manager);
+        
+        System.out.println("\n--- Test 5: Factory Method Flexibility ---");
+        testFactoryFlexibility();
+    }
+    
+    private static void testWordDocument(DocumentManager manager) {
+        DocumentFactory wordFactory = manager.getFactory(DocumentType.WORD);
+        manager.setDocumentFactory(wordFactory);
+        
+        Document wordDoc = manager.createNewDocument("Annual Report", "This is the annual report content...");
+        wordDoc.displayInfo();
+        
+        // Test Word-specific functionality
+        if (wordDoc instanceof WordDocument) {
+            WordDocument wd = (WordDocument) wordDoc;
+            wd.addTable(5, 3);
+            wd.setTemplate("Corporate Template");
+        }
+        
+        wordDoc.open();
+        wordDoc.save();
+        wordDoc.close();
+    }
+    
+    private static void testPdfDocument(DocumentManager manager) {
+        DocumentFactory pdfFactory = manager.getFactory(DocumentType.PDF);
+        manager.setDocumentFactory(pdfFactory);
+        
+        Document pdfDoc = manager.createNewDocument("User Manual", "This is the user manual content...");
+        pdfDoc.displayInfo();
+        
+        // Test PDF-specific functionality
+        if (pdfDoc instanceof PdfDocument) {
+            PdfDocument pd = (PdfDocument) pdfDoc;
+            pd.setAuthor("Technical Team");
+            pd.encrypt("secure123");
+        }
+        
+        pdfDoc.open();
+        pdfDoc.save();
+        pdfDoc.close();
+    }
+    
+    private static void testExcelDocument(DocumentManager manager) {
+        DocumentFactory excelFactory = manager.getFactory(DocumentType.EXCEL);
+        manager.setDocumentFactory(excelFactory);
+        
+        Document excelDoc = manager.createNewDocument("Sales Data", "This is the sales data content...");
+        excelDoc.displayInfo();
+        
+        // Test Excel-specific functionality
+        if (excelDoc instanceof ExcelDocument) {
+            ExcelDocument ed = (ExcelDocument) excelDoc;
+            ed.addWorksheet("Q1 Data");
+            ed.addWorksheet("Q2 Data");
+            ed.createChart("Bar Chart");
+        }
+        
+        excelDoc.open();
+        excelDoc.save();
+        excelDoc.close();
+    }
+    
+    private static void testDocumentOperations(DocumentManager manager) {
+        // Create multiple documents using different factories
+        Document[] documents = {
+            manager.getFactory(DocumentType.WORD).createDocument("Contract"),
+            manager.getFactory(DocumentType.PDF).createDocument("Invoice"),
+            manager.getFactory(DocumentType.EXCEL).createDocument("Budget")
+        };
+        
+        for (Document doc : documents) {
+            doc.create();
+            doc.setContent("Sample content for " + doc.getName());
+            System.out.println("Created: " + doc.getDocumentType() + " - " + doc.getName());
+        }
+    }
+    
+    private static void testFactoryFlexibility() {
+        System.out.println("Testing factory method flexibility:");
+        
+        // Create documents directly

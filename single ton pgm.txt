@@ -1,0 +1,177 @@
+// Logger.java - Singleton Logger Class
+class Logger {
+    // Private static instance of the Logger class
+    private static Logger instance = null;
+    
+    // Private constructor to prevent direct instantiation
+    private Logger() {
+        System.out.println("Logger instance created!");
+    }
+    
+    // Public static method to get the single instance of Logger
+    // Using lazy initialization with thread safety
+    public static synchronized Logger getInstance() {
+        if (instance == null) {
+            instance = new Logger();
+        }
+        return instance;
+    }
+    
+    // Logging methods
+    public void log(String message) {
+        System.out.println("[LOG] " + java.time.LocalDateTime.now() + ": " + message);
+    }
+    
+    public void logError(String errorMessage) {
+        System.out.println("[ERROR] " + java.time.LocalDateTime.now() + ": " + errorMessage);
+    }
+    
+    public void logInfo(String infoMessage) {
+        System.out.println("[INFO] " + java.time.LocalDateTime.now() + ": " + infoMessage);
+    }
+    
+    // Method to get instance hash code for testing
+    public String getInstanceInfo() {
+        return "Logger instance hash: " + this.hashCode();
+    }
+}
+
+// SingletonTest.java - Test Class
+class SingletonTest {
+    public static void main(String[] args) {
+        System.out.println("=== Singleton Pattern Test ===\n");
+        
+        // Test 1: Get first instance
+        System.out.println("Test 1: Getting first Logger instance");
+        Logger logger1 = Logger.getInstance();
+        logger1.log("First logger instance obtained");
+        System.out.println(logger1.getInstanceInfo());
+        
+        System.out.println();
+        
+        // Test 2: Get second instance
+        System.out.println("Test 2: Getting second Logger instance");
+        Logger logger2 = Logger.getInstance();
+        logger2.log("Second logger instance obtained");
+        System.out.println(logger2.getInstanceInfo());
+        
+        System.out.println();
+        
+        // Test 3: Verify both references point to same instance
+        System.out.println("Test 3: Verifying singleton behavior");
+        System.out.println("logger1 == logger2: " + (logger1 == logger2));
+        System.out.println("logger1.equals(logger2): " + logger1.equals(logger2));
+        System.out.println("Same hash code: " + (logger1.hashCode() == logger2.hashCode()));
+        
+        System.out.println();
+        
+        // Test 4: Test logging functionality
+        System.out.println("Test 4: Testing logging functionality");
+        logger1.logInfo("Testing info message from logger1");
+        logger2.logError("Testing error message from logger2");
+        logger1.log("Regular log message");
+        
+        System.out.println();
+        
+        // Test 5: Multiple thread test (simplified)
+        System.out.println("Test 5: Testing thread safety");
+        testThreadSafety();
+        
+        System.out.println("\n=== All tests completed ===");
+    }
+    
+    // Method to test thread safety
+    private static void testThreadSafety() {
+        Thread thread1 = new Thread(() -> {
+            Logger logger = Logger.getInstance();
+            System.out.println("Thread 1 - " + logger.getInstanceInfo());
+        });
+        
+        Thread thread2 = new Thread(() -> {
+            Logger logger = Logger.getInstance();
+            System.out.println("Thread 2 - " + logger.getInstanceInfo());
+        });
+        
+        thread1.start();
+        thread2.start();
+        
+        try {
+            thread1.join();
+            thread2.join();
+        } catch (InterruptedException e) {
+            System.out.println("Thread interrupted: " + e.getMessage());
+        }
+    }
+}
+
+// Alternative Implementation: Eager Initialization Singleton
+class EagerLogger {
+    // Eager initialization - instance created at class loading time
+    private static final EagerLogger instance = new EagerLogger();
+    
+    private EagerLogger() {
+        System.out.println("EagerLogger instance created at class loading!");
+    }
+    
+    public static EagerLogger getInstance() {
+        return instance;
+    }
+    
+    public void log(String message) {
+        System.out.println("[EAGER-LOG] " + java.time.LocalDateTime.now() + ": " + message);
+    }
+}
+
+// Bill Pugh Singleton Implementation (Recommended approach)
+class BillPughLogger {
+    private BillPughLogger() {
+        System.out.println("BillPughLogger instance created!");
+    }
+    
+    // Inner static helper class
+    private static class SingletonHelper {
+        private static final BillPughLogger INSTANCE = new BillPughLogger();
+    }
+    
+    public static BillPughLogger getInstance() {
+        return SingletonHelper.INSTANCE;
+    }
+    
+    public void log(String message) {
+        System.out.println("[BILL-PUGH-LOG] " + java.time.LocalDateTime.now() + ": " + message);
+    }
+}
+
+// Main class to run all examples
+public class SingletonPatternExample {
+    public static void main(String[] args) {
+        System.out.println("=============================================");
+        System.out.println("    SINGLETON PATTERN IMPLEMENTATION");
+        System.out.println("=============================================\n");
+        
+        // Run the main singleton test
+        SingletonTest.main(args);
+        
+        System.out.println("\n" + "=".repeat(45));
+        System.out.println("    ALTERNATIVE IMPLEMENTATIONS");
+        System.out.println("=".repeat(45));
+        
+        // Test Eager Initialization
+        System.out.println("\n--- Eager Initialization Test ---");
+        EagerLogger eagerLogger1 = EagerLogger.getInstance();
+        EagerLogger eagerLogger2 = EagerLogger.getInstance();
+        System.out.println("Eager instances are same: " + (eagerLogger1 == eagerLogger2));
+        eagerLogger1.log("Testing eager initialization");
+        
+        // Test Bill Pugh Implementation
+        System.out.println("\n--- Bill Pugh Implementation Test ---");
+        BillPughLogger billPughLogger1 = BillPughLogger.getInstance();
+        BillPughLogger billPughLogger2 = BillPughLogger.getInstance();
+        System.out.println("Bill Pugh instances are same: " + (billPughLogger1 == billPughLogger2));
+        billPughLogger1.log("Testing Bill Pugh implementation");
+        
+        System.out.println("\n" + "=".repeat(45));
+        System.out.println("    IMPLEMENTATION COMPLETE");
+        System.out.println("=".repeat(45));
+    }
+}

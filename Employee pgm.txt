@@ -1,0 +1,286 @@
+class Employee {
+    private int employeeId;
+    private String name;
+    private String position;
+    private double salary;
+    
+    // Constructor
+    public Employee(int employeeId, String name, String position, double salary) {
+        this.employeeId = employeeId;
+        this.name = name;
+        this.position = position;
+        this.salary = salary;
+    }
+    
+    // Getters
+    public int getEmployeeId() { return employeeId; }
+    public String getName() { return name; }
+    public String getPosition() { return position; }
+    public double getSalary() { return salary; }
+    
+    // Setters
+    public void setName(String name) { this.name = name; }
+    public void setPosition(String position) { this.position = position; }
+    public void setSalary(double salary) { this.salary = salary; }
+    
+    @Override
+    public String toString() {
+        return String.format("Employee{ID: %d, Name: %s, Position: %s, Salary: $%.2f}", 
+                           employeeId, name, position, salary);
+    }
+}
+
+class EmployeeManagementSystem {
+    private Employee[] employees;
+    private int capacity;
+    private int size;
+    
+    // Constructor
+    public EmployeeManagementSystem(int capacity) {
+        this.capacity = capacity;
+        this.employees = new Employee[capacity];
+        this.size = 0;
+    }
+    
+    /**
+     * Add employee to the system
+     * Time Complexity: O(1) - if array has space
+     *                 O(n) - if array needs to be resized (not implemented here)
+     */
+    public boolean addEmployee(Employee employee) {
+        if (size >= capacity) {
+            System.out.println("Error: Employee database is full!");
+            return false;
+        }
+        
+        // Check for duplicate employee ID
+        if (searchEmployeeById(employee.getEmployeeId()) != null) {
+            System.out.println("Error: Employee with ID " + employee.getEmployeeId() + " already exists!");
+            return false;
+        }
+        
+        employees[size] = employee;
+        size++;
+        System.out.println("Employee added successfully: " + employee.getName());
+        return true;
+    }
+    
+    /**
+     * Search employee by ID (Linear Search)
+     * Time Complexity: O(n) - worst case, need to check all elements
+     */
+    public Employee searchEmployeeById(int employeeId) {
+        for (int i = 0; i < size; i++) {
+            if (employees[i] != null && employees[i].getEmployeeId() == employeeId) {
+                return employees[i];
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Search employees by name (returns first match)
+     * Time Complexity: O(n) - linear search through array
+     */
+    public Employee searchEmployeeByName(String name) {
+        for (int i = 0; i < size; i++) {
+            if (employees[i] != null && employees[i].getName().equalsIgnoreCase(name)) {
+                return employees[i];
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Search employees by position (returns all matches)
+     * Time Complexity: O(n) - must traverse entire array
+     */
+    public void searchEmployeesByPosition(String position) {
+        boolean found = false;
+        System.out.println("Employees in position: " + position);
+        
+        for (int i = 0; i < size; i++) {
+            if (employees[i] != null && employees[i].getPosition().equalsIgnoreCase(position)) {
+                System.out.println("  " + employees[i]);
+                found = true;
+            }
+        }
+        
+        if (!found) {
+            System.out.println("  No employees found in this position.");
+        }
+    }
+    
+    /**
+     * Traverse and display all employees
+     * Time Complexity: O(n) - must visit each element once
+     */
+    public void traverseEmployees() {
+        if (size == 0) {
+            System.out.println("No employees in the system.");
+            return;
+        }
+        
+        System.out.println("All Employees:");
+        System.out.println("=".repeat(60));
+        for (int i = 0; i < size; i++) {
+            if (employees[i] != null) {
+                System.out.println((i + 1) + ". " + employees[i]);
+            }
+        }
+        System.out.println("Total employees: " + size);
+    }
+    
+    /**
+     * Delete employee by ID
+     * Time Complexity: O(n) - O(n) to find + O(n) to shift elements
+     */
+    public boolean deleteEmployee(int employeeId) {
+        int indexToDelete = -1;
+        
+        // Find the employee to delete - O(n)
+        for (int i = 0; i < size; i++) {
+            if (employees[i] != null && employees[i].getEmployeeId() == employeeId) {
+                indexToDelete = i;
+                break;
+            }
+        }
+        
+        if (indexToDelete == -1) {
+            System.out.println("Employee with ID " + employeeId + " not found!");
+            return false;
+        }
+        
+        String deletedName = employees[indexToDelete].getName();
+        
+        // Shift elements to the left to fill the gap - O(n)
+        for (int i = indexToDelete; i < size - 1; i++) {
+            employees[i] = employees[i + 1];
+        }
+        
+        employees[size - 1] = null; // Clear the last element
+        size--;
+        
+        System.out.println("Employee deleted successfully: " + deletedName);
+        return true;
+    }
+    
+    /**
+     * Update employee information
+     * Time Complexity: O(n) - need to search for employee first
+     */
+    public boolean updateEmployee(int employeeId, String newName, String newPosition, double newSalary) {
+        Employee employee = searchEmployeeById(employeeId);
+        if (employee == null) {
+            System.out.println("Employee with ID " + employeeId + " not found!");
+            return false;
+        }
+        
+        employee.setName(newName);
+        employee.setPosition(newPosition);
+        employee.setSalary(newSalary);
+        
+        System.out.println("Employee updated successfully: " + employee);
+        return true;
+    }
+    
+    /**
+     * Get system statistics
+     * Time Complexity: O(n) - traverse array to calculate statistics
+     */
+    public void displayStatistics() {
+        if (size == 0) {
+            System.out.println("No employees to analyze.");
+            return;
+        }
+        
+        double totalSalary = 0;
+        double maxSalary = Double.MIN_VALUE;
+        double minSalary = Double.MAX_VALUE;
+        
+        for (int i = 0; i < size; i++) {
+            if (employees[i] != null) {
+                double salary = employees[i].getSalary();
+                totalSalary += salary;
+                maxSalary = Math.max(maxSalary, salary);
+                minSalary = Math.min(minSalary, salary);
+            }
+        }
+        
+        System.out.println("Employee Statistics:");
+        System.out.println("Total Employees: " + size);
+        System.out.println("Average Salary: $" + String.format("%.2f", totalSalary / size));
+        System.out.println("Highest Salary: $" + String.format("%.2f", maxSalary));
+        System.out.println("Lowest Salary: $" + String.format("%.2f", minSalary));
+        System.out.println("Capacity Utilization: " + (size * 100.0 / capacity) + "%");
+    }
+    
+    public int getSize() { return size; }
+    public int getCapacity() { return capacity; }
+}
+
+// Demo class to test the Employee Management System
+public class EmployeeManagementDemo {
+    public static void main(String[] args) {
+        // Create employee management system with capacity of 10
+        EmployeeManagementSystem ems = new EmployeeManagementSystem(10);
+        
+        System.out.println("=== Employee Management System Demo ===\n");
+        
+        // Add employees
+        System.out.println("1. Adding Employees:");
+        ems.addEmployee(new Employee(101, "Alice Johnson", "Software Engineer", 75000));
+        ems.addEmployee(new Employee(102, "Bob Smith", "Project Manager", 85000));
+        ems.addEmployee(new Employee(103, "Carol Davis", "Software Engineer", 72000));
+        ems.addEmployee(new Employee(104, "David Wilson", "Senior Developer", 90000));
+        ems.addEmployee(new Employee(105, "Eve Brown", "QA Engineer", 65000));
+        
+        // Try to add duplicate
+        ems.addEmployee(new Employee(101, "Duplicate Alice", "Tester", 50000));
+        
+        System.out.println("\n2. Traversing All Employees:");
+        ems.traverseEmployees();
+        
+        System.out.println("\n3. Searching Operations:");
+        // Search by ID
+        Employee found = ems.searchEmployeeById(103);
+        if (found != null) {
+            System.out.println("Found employee by ID 103: " + found);
+        }
+        
+        // Search by name
+        found = ems.searchEmployeeByName("Bob Smith");
+        if (found != null) {
+            System.out.println("Found employee by name 'Bob Smith': " + found);
+        }
+        
+        // Search by position
+        ems.searchEmployeesByPosition("Software Engineer");
+        
+        System.out.println("\n4. Updating Employee:");
+        ems.updateEmployee(102, "Robert Smith", "Senior Project Manager", 95000);
+        
+        System.out.println("\n5. Statistics:");
+        ems.displayStatistics();
+        
+        System.out.println("\n6. Deleting Employee:");
+        ems.deleteEmployee(103);
+        ems.traverseEmployees();
+        
+        System.out.println("\n7. Final Statistics:");
+        ems.displayStatistics();
+        
+        // Demonstrate array limitations
+        System.out.println("\n8. Testing Array Limitations:");
+        System.out.println("Current size: " + ems.getSize() + "/" + ems.getCapacity());
+        
+        // Try to fill the array
+        for (int i = 106; i <= 115; i++) {
+            boolean added = ems.addEmployee(new Employee(i, "Employee " + i, "Developer", 70000));
+            if (!added) {
+                System.out.println("Could not add employee " + i + " - array is full!");
+                break;
+            }
+        }
+    }
+}

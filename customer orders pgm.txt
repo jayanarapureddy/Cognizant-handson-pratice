@@ -1,0 +1,249 @@
+import java.util.*;
+
+/**
+ * Order class representing customer orders in an e-commerce platform
+ */
+class Order {
+    private String orderId;
+    private String customerName;
+    private double totalPrice;
+    
+    public Order(String orderId, String customerName, double totalPrice) {
+        this.orderId = orderId;
+        this.customerName = customerName;
+        this.totalPrice = totalPrice;
+    }
+    
+    // Getters
+    public String getOrderId() { return orderId; }
+    public String getCustomerName() { return customerName; }
+    public double getTotalPrice() { return totalPrice; }
+    
+    @Override
+    public String toString() {
+        return String.format("Order{ID='%s', Customer='%s', Price=$%.2f}", 
+                           orderId, customerName, totalPrice);
+    }
+}
+
+/**
+ * OrderSorter class implementing different sorting algorithms
+ */
+class OrderSorter {
+    
+    /**
+     * Bubble Sort Implementation
+     * Time Complexity: O(n²) - worst and average case
+     * Space Complexity: O(1)
+     * 
+     * Process: Repeatedly steps through the list, compares adjacent elements
+     * and swaps them if they're in wrong order. Pass through continues until no swaps needed.
+     */
+    public static void bubbleSort(Order[] orders) {
+        int n = orders.length;
+        boolean swapped;
+        
+        for (int i = 0; i < n - 1; i++) {
+            swapped = false;
+            for (int j = 0; j < n - i - 1; j++) {
+                // Sort in descending order (high-value orders first)
+                if (orders[j].getTotalPrice() < orders[j + 1].getTotalPrice()) {
+                    // Swap orders
+                    Order temp = orders[j];
+                    orders[j] = orders[j + 1];
+                    orders[j + 1] = temp;
+                    swapped = true;
+                }
+            }
+            // If no swapping occurred, array is sorted
+            if (!swapped) break;
+        }
+    }
+    
+    /**
+     * Quick Sort Implementation
+     * Time Complexity: O(n log n) - average case, O(n²) - worst case
+     * Space Complexity: O(log n) - due to recursion stack
+     * 
+     * Process: Divides array into sub-arrays around a pivot element,
+     * recursively sorts sub-arrays where elements less than pivot go left,
+     * greater elements go right.
+     */
+    public static void quickSort(Order[] orders, int low, int high) {
+        if (low < high) {
+            // Partition the array and get pivot index
+            int pivotIndex = partition(orders, low, high);
+            
+            // Recursively sort elements before and after partition
+            quickSort(orders, low, pivotIndex - 1);
+            quickSort(orders, pivotIndex + 1, high);
+        }
+    }
+    
+    /**
+     * Partition method for Quick Sort
+     * Places pivot in correct position and partitions array
+     */
+    private static int partition(Order[] orders, int low, int high) {
+        // Choose rightmost element as pivot
+        double pivot = orders[high].getTotalPrice();
+        int i = low - 1; // Index of smaller element
+        
+        for (int j = low; j < high; j++) {
+            // Sort in descending order (high-value orders first)
+            if (orders[j].getTotalPrice() >= pivot) {
+                i++;
+                // Swap orders[i] and orders[j]
+                Order temp = orders[i];
+                orders[i] = orders[j];
+                orders[j] = temp;
+            }
+        }
+        
+        // Swap orders[i+1] and orders[high] (pivot)
+        Order temp = orders[i + 1];
+        orders[i + 1] = orders[high];
+        orders[high] = temp;
+        
+        return i + 1;
+    }
+    
+    // Wrapper method for Quick Sort
+    public static void quickSort(Order[] orders) {
+        quickSort(orders, 0, orders.length - 1);
+    }
+}
+
+/**
+ * Main class to demonstrate and analyze sorting algorithms
+ */
+public class CustomerOrderSorting {
+    
+    public static void main(String[] args) {
+        // Create sample orders
+        Order[] orders1 = createSampleOrders();
+        Order[] orders2 = Arrays.copyOf(orders1, orders1.length);
+        
+        System.out.println("=== CUSTOMER ORDER SORTING ANALYSIS ===\n");
+        
+        System.out.println("Original Orders:");
+        printOrders(orders1);
+        
+        // Test Bubble Sort
+        System.out.println("\n--- BUBBLE SORT ---");
+        long startTime = System.nanoTime();
+        OrderSorter.bubbleSort(orders1);
+        long bubbleTime = System.nanoTime() - startTime;
+        
+        System.out.println("Orders sorted by Bubble Sort (High to Low value):");
+        printOrders(orders1);
+        System.out.printf("Bubble Sort Time: %.2f microseconds\n", bubbleTime / 1000.0);
+        
+        // Test Quick Sort
+        System.out.println("\n--- QUICK SORT ---");
+        startTime = System.nanoTime();
+        OrderSorter.quickSort(orders2);
+        long quickTime = System.nanoTime() - startTime;
+        
+        System.out.println("Orders sorted by Quick Sort (High to Low value):");
+        printOrders(orders2);
+        System.out.printf("Quick Sort Time: %.2f microseconds\n", quickTime / 1000.0);
+        
+        // Performance Analysis
+        performanceAnalysis(bubbleTime, quickTime);
+        
+        // Large dataset comparison
+        largeDataseTesting();
+    }
+    
+    /**
+     * Creates sample orders for testing
+     */
+    private static Order[] createSampleOrders() {
+        return new Order[] {
+            new Order("ORD001", "Alice Johnson", 299.99),
+            new Order("ORD002", "Bob Smith", 1299.50),
+            new Order("ORD003", "Carol Davis", 89.99),
+            new Order("ORD004", "David Wilson", 2150.00),
+            new Order("ORD005", "Emma Brown", 459.75),
+            new Order("ORD006", "Frank Miller", 99.99),
+            new Order("ORD007", "Grace Lee", 1899.00),
+            new Order("ORD008", "Henry Taylor", 329.50)
+        };
+    }
+    
+    /**
+     * Utility method to print orders
+     */
+    private static void printOrders(Order[] orders) {
+        for (Order order : orders) {
+            System.out.println("  " + order);
+        }
+    }
+    
+    /**
+     * Analyzes and compares performance of both algorithms
+     */
+    private static void performanceAnalysis(long bubbleTime, long quickTime) {
+        System.out.println("\n=== PERFORMANCE ANALYSIS ===");
+        
+        double speedup = (double) bubbleTime / quickTime;
+        System.out.printf("Performance Comparison:\n");
+        System.out.printf("- Bubble Sort: %.2f microseconds\n", bubbleTime / 1000.0);
+        System.out.printf("- Quick Sort:  %.2f microseconds\n", quickTime / 1000.0);
+        System.out.printf("- Quick Sort is %.1fx faster\n", speedup);
+        
+        System.out.println("\nTime Complexity Analysis:");
+        System.out.println("- Bubble Sort: O(n²) - always compares every pair");
+        System.out.println("- Quick Sort:  O(n log n) average, O(n²) worst case");
+        System.out.println("- Quick Sort divides problem size, much more efficient");
+    }
+    
+    /**
+     * Tests performance with larger datasets
+     */
+    private static void largeDataseTesting() {
+        System.out.println("\n=== LARGE DATASET TESTING ===");
+        
+        int[] sizes = {100, 500, 1000};
+        
+        for (int size : sizes) {
+            Order[] orders1 = generateRandomOrders(size);
+            Order[] orders2 = Arrays.copyOf(orders1, orders1.length);
+            
+            // Bubble Sort
+            long startTime = System.nanoTime();
+            OrderSorter.bubbleSort(orders1);
+            long bubbleTime = System.nanoTime() - startTime;
+            
+            // Quick Sort
+            startTime = System.nanoTime();
+            OrderSorter.quickSort(orders2);
+            long quickTime = System.nanoTime() - startTime;
+            
+            System.out.printf("Dataset size %d:\n", size);
+            System.out.printf("  Bubble Sort: %.2f ms\n", bubbleTime / 1_000_000.0);
+            System.out.printf("  Quick Sort:  %.2f ms\n", quickTime / 1_000_000.0);
+            System.out.printf("  Speedup:     %.1fx\n\n", (double) bubbleTime / quickTime);
+        }
+    }
+    
+    /**
+     * Generates random orders for testing
+     */
+    private static Order[] generateRandomOrders(int count) {
+        Order[] orders = new Order[count];
+        Random random = new Random();
+        
+        for (int i = 0; i < count; i++) {
+            String orderId = "ORD" + String.format("%04d", i + 1);
+            String customerName = "Customer" + (i + 1);
+            double totalPrice = 10.0 + (random.nextDouble() * 2990.0); // $10 to $3000
+            
+            orders[i] = new Order(orderId, customerName, totalPrice);
+        }
+        
+        return orders;
+    }
+}
+
